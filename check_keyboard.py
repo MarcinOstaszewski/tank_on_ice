@@ -1,32 +1,40 @@
-
 import pygame
 import math
+from constants import MAX_SPEED, MAX_ROTATION_SPEED, ACCELERATION, DECELERATION, ROTATION_ACCELERATION, ROTATION_DECELERATION, WIDTH, HEIGHT
 
-def check_keyboard(tank_velocity, tank_horizontal_speed, tank_vertical_speed, tank_rotation_speed, tank_angle, acceleration, deceleration, rotation_acceleration, rotation_deceleration, max_speed, max_rotation_speed):
-  keys = pygame.key.get_pressed()
-  if keys[pygame.K_UP]:
-    tank_velocity = min(tank_velocity + acceleration, max_speed)
-    tank_horizontal_speed += acceleration * math.cos(math.radians(tank_angle))
-    tank_vertical_speed -= acceleration * math.sin(math.radians(tank_angle))
-  else:
-    tank_horizontal_speed *= deceleration
-    tank_vertical_speed *= deceleration
+def check_keyboard(tank):
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP]:
+        tank['velocity'] = min(tank['velocity'] + ACCELERATION, MAX_SPEED)
+        tank['horizontal_speed'] += ACCELERATION * math.cos(math.radians(tank['angle']))
+        tank['vertical_speed'] -= ACCELERATION * math.sin(math.radians(tank['angle']))
+    else:
+        tank['horizontal_speed'] *= DECELERATION
+        tank['vertical_speed'] *= DECELERATION
 
-  if keys[pygame.K_DOWN]:
-    tank_velocity = max(tank_velocity - acceleration, -max_speed)
-    tank_horizontal_speed -= acceleration * math.cos(math.radians(tank_angle))
-    tank_vertical_speed += acceleration * math.sin(math.radians(tank_angle))
-  if keys[pygame.K_LEFT]:
-    if tank_rotation_speed < max_rotation_speed:
-      tank_rotation_speed += rotation_acceleration
-  if keys[pygame.K_RIGHT]:
-    if tank_rotation_speed > -max_rotation_speed:
-      tank_rotation_speed -= rotation_acceleration
+    if keys[pygame.K_DOWN]:
+        tank['velocity'] = max(tank['velocity'] - ACCELERATION, -MAX_SPEED)
+        tank['horizontal_speed'] -= ACCELERATION * math.cos(math.radians(tank['angle']))
+        tank['vertical_speed'] += ACCELERATION * math.sin(math.radians(tank['angle']))
+    if keys[pygame.K_LEFT]:
+        if tank['rotation_speed'] < MAX_ROTATION_SPEED:
+            tank['rotation_speed'] += ROTATION_ACCELERATION
+    if keys[pygame.K_RIGHT]:
+        if tank['rotation_speed'] > -MAX_ROTATION_SPEED:
+            tank['rotation_speed'] -= ROTATION_ACCELERATION
 
-  if not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-    tank_rotation_speed *= rotation_deceleration
+    if not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
+        tank['rotation_speed'] *= ROTATION_DECELERATION
 
-  # Update tank angle
-  tank_angle += tank_rotation_speed
+    # Update tank angle
+    tank['angle'] += tank['rotation_speed']
 
-  return tank_velocity, tank_horizontal_speed, tank_vertical_speed, tank_rotation_speed, tank_angle
+    # Update tank position with boundary check
+    new_x = tank["pos"][0] + tank["horizontal_speed"]
+    new_y = tank["pos"][1] + tank["vertical_speed"]
+    if tank["size"] <= new_x <= WIDTH - tank["size"]:
+      tank["pos"][0] = new_x
+    if tank["size"] <= new_y <= HEIGHT - tank["size"]:
+      tank["pos"][1] = new_y
+
+    return tank
